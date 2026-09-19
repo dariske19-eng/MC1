@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Drizz</title>
+<link rel="icon" type="image/png" href="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lime:#EAFFC9; --dark:#0C3722; --darker:#071B12;
+    --mid:#1C7A46; --white:#FFFFFF; --text-soft:#2F5240;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{ font-family:'Inter',sans-serif; background:var(--lime); color:var(--darker); min-height:100vh; }
+  a{ color:inherit; }
+  h1,h2,h3{ font-family:'Bricolage Grotesque',sans-serif; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* ---- LOGIN ---- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{ background:var(--white); border-radius:28px; padding:36px 30px; width:100%; max-width:380px; }
+  .login-card h1{ font-size:1.4rem; margin-bottom:20px; }
+  .login-card input{
+    width:100%; font-family:inherit; font-size:.9rem; padding:12px 16px;
+    border-radius:14px; border:1.5px solid rgba(12,55,34,.15); margin-bottom:12px; background:#EFFFE2;
+  }
+  .login-card button{
+    width:100%; background:var(--dark); color:var(--lime); font-weight:700; font-size:.9rem;
+    padding:13px; border-radius:999px; border:none;
+  }
+  .login-error{ display:none; color:#C0392B; font-size:.82rem; margin-bottom:10px; }
+  .login-error.show{ display:block; }
+
+  /* ---- DASHBOARD LAYOUT ---- */
+  #dashboard{ display:none; }
+  header{
+    background:var(--dark); color:var(--lime); padding:18px 24px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+  header .brand{ font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:1.2rem; display:flex; align-items:center; gap:10px; }
+  header .brand img{ width:32px; height:32px; border-radius:28%; }
+  header button{ background:rgba(234,255,201,.14); color:var(--lime); border:none; padding:9px 18px; border-radius:999px; font-size:.85rem; font-weight:600; }
+
+  .tabs-bar{
+    display:flex; gap:8px; overflow-x:auto; padding:14px 24px; background:var(--white);
+    border-bottom:1px solid rgba(12,55,34,.1);
+  }
+  .tab-btn{
+    flex-shrink:0; background:#EFFFE2; border:none; padding:10px 18px; border-radius:999px;
+    font-size:.85rem; font-weight:700; color:var(--text-soft);
+  }
+  .tab-btn.active{ background:var(--dark); color:var(--lime); }
+
+  main{ max-width:900px; margin:0 auto; padding:28px 20px 80px; }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .panel-card{ background:var(--white); border-radius:24px; padding:24px; margin-bottom:20px; }
+  .panel-card h2{ font-size:1.15rem; margin-bottom:16px; }
+  label{ display:flex; flex-direction:column; gap:6px; font-size:.83rem; font-weight:600; color:var(--text-soft); margin-bottom:14px; }
+  input, textarea, select{
+    font-family:inherit; font-size:.9rem; color:var(--darker); background:#EFFFE2;
+    border:1.5px solid rgba(12,55,34,.15); border-radius:14px; padding:11px 16px; resize:vertical;
+  }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--mid); }
+  input[type="color"]{ padding:4px; height:44px; cursor:pointer; }
+  .btn-primary{
+    background:var(--dark); color:var(--lime); font-weight:700; font-size:.88rem;
+    padding:12px 22px; border-radius:999px; border:none;
+  }
+  .btn-ghost{
+    background:none; border:1.5px solid rgba(12,55,34,.15); color:var(--darker);
+    font-weight:600; font-size:.85rem; padding:10px 18px; border-radius:999px;
+  }
+  .btn-danger{ background:#FCE4E1; color:#C0392B; border:none; border-radius:50%; width:30px; height:30px; font-size:.85rem; flex-shrink:0; }
+  .btn-edit{ background:rgba(28,122,70,.14); color:var(--mid); border:none; border-radius:999px; padding:0 12px; font-size:.75rem; font-weight:700; flex-shrink:0; }
+  .row-flex{ display:flex; gap:10px; align-items:center; }
+  .list-item{ display:flex; gap:10px; align-items:center; background:#EFFFE2; border-radius:14px; padding:12px; margin-bottom:8px; }
+  .list-item .info{ flex:1; min-width:0; }
+  .list-item .t{ font-size:.87rem; font-weight:700; }
+  .list-item .s{ font-size:.75rem; color:var(--text-soft); }
+  .empty-msg{ font-size:.85rem; color:var(--text-soft); text-align:center; padding:16px; }
+  .msg-error{ display:none; color:#C0392B; font-size:.82rem; margin-bottom:10px; }
+  .msg-error.show{ display:block; }
+  .msg-success{ display:none; color:var(--mid); font-size:.82rem; font-weight:600; margin-bottom:10px; }
+  .msg-success.show{ display:block; }
+  .stat-box{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+  .stat-box .box{ background:#EFFFE2; border-radius:16px; padding:16px 22px; flex:1; min-width:120px; }
+  .stat-box .num{ font-family:'Bricolage Grotesque',sans-serif; font-size:1.6rem; font-weight:700; }
+  .stat-box .lbl{ font-size:.78rem; color:var(--text-soft); }
+  .comment-text-box{ font-size:.85rem; background:var(--lime); padding:10px 12px; border-radius:12px; margin-top:6px; }
+  .admin-badge{ color:#2563EB; font-weight:800; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Panel Admin Drizz</h1>
+    <p class="login-error" id="loginError">Email atau kata laluan salah.</p>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email admin" required>
+      <input type="password" id="loginPassword" placeholder="Kata laluan" required>
+      <button type="submit">Log Masuk</button>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="brand">
+      <img src="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png" alt="">
+      Panel Admin
+    </div>
+    <button id="logoutBtn">Log Keluar</button>
+  </header>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="addon">📦 Addon</button>
+    <button class="tab-btn" data-tab="appearance">🎨 Rupa Laman</button>
+    <button class="tab-btn" data-tab="news">📰 Berita</button>
+    <button class="tab-btn" data-tab="reports">🚩 Laporan</button>
+    <button class="tab-btn" data-tab="users">👥 Pengguna</button>
+    <button class="tab-btn" data-tab="comments">💬 Semua Komen</button>
+  </div>
+
+  <main>
+
+    <!-- ===== TAB: ADDON ===== -->
+    <div class="tab-panel active" id="tab-addon">
+      <div class="panel-card">
+        <h2 id="addonFormHeading">Tambah Addon</h2>
+        <p class="msg-error" id="addonError"></p>
+        <form id="addonForm">
+          <label>Kumpulan (Group)
+            <input type="text" id="fieldGroup" placeholder="Contoh: Texture Pack" required>
+          </label>
+          <label>Tajuk Addon
+            <input type="text" id="fieldTitle" required>
+          </label>
+          <label>URL Gambar/Ikon (pilihan)
+            <input type="url" id="fieldImage">
+          </label>
+          <label>URL Pautan Muat Turun (pilihan)
+            <input type="url" id="fieldLink">
+          </label>
+          <label>Penerangan Ringkas
+            <textarea id="fieldDesc" rows="2"></textarea>
+          </label>
+          <label>Cara Guna (pilihan)
+            <textarea id="fieldHowTo" rows="3"></textarea>
+          </label>
+          <label>URL Video YouTube/TikTok (pilihan)
+            <input type="url" id="fieldVideoUrl">
+          </label>
+          <label>Label Badge
+            <input type="text" id="fieldBadge" value="Muat Turun">
+          </label>
+          <div class="row-flex">
+            <button type="submit" id="submitAddonBtn" class="btn-primary" style="flex:1;">+ Tambah Addon</button>
+            <button type="button" id="cancelEditBtn" class="btn-ghost" style="display:none;">Batal</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <h2>Addon Semasa</h2>
+        <div id="adminAddonList"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: RUPA LAMAN ===== -->
+    <div class="tab-panel" id="tab-appearance">
+      <div class="panel-card">
+        <h2>Warna Latar Laman</h2>
+        <p class="msg-success" id="appearanceSuccess"></p>
+        <label>Warna Latar — Tema Terang
+          <input type="color" id="bgLight" value="#EAFFC9">
+        </label>
+        <label>Warna Latar — Tema Gelap
+          <input type="color" id="bgDark" value="#0A2318">
+        </label>
+        <button id="saveAppearanceBtn" class="btn-primary">Simpan Warna</button>
+      </div>
+
+      <div class="panel-card">
+        <h2>Edit Teks Hero (index.html)</h2>
+        <label>Tajuk Hero — Bahasa Melayu
+          <input type="text" id="heroTitleMs">
+        </label>
+        <label>Penerangan Hero — Bahasa Melayu
+          <textarea id="heroDescMs" rows="2"></textarea>
+        </label>
+        <label>Tajuk Hero — Bahasa Indonesia
+          <input type="text" id="heroTitleId">
+        </label>
+        <label>Penerangan Hero — Bahasa Indonesia
+          <textarea id="heroDescId" rows="2"></textarea>
+        </label>
+        <label>Tajuk Hero — English
+          <input type="text" id="heroTitleEn">
+        </label>
+        <label>Penerangan Hero — English
+          <textarea id="heroDescEn" rows="2"></textarea>
+        </label>
+        <button id="saveTextBtn" class="btn-primary">Simpan Teks</button>
+      </div>
+    </div>
+
+    <!-- ===== TAB: BERITA ===== -->
+    <div class="tab-panel" id="tab-news">
+      <div class="panel-card">
+        <h2>Tambah Berita</h2>
+        <p class="msg-error" id="newsError"></p>
+        <label>Tajuk
+          <input type="text" id="newsTitle" required>
+        </label>
+        <label>Kandungan
+          <textarea id="newsContent" rows="3"></textarea>
+        </label>
+        <label>URL Gambar (pilihan)
+          <input type="url" id="newsImage">
+        </label>
+        <button id="addNewsBtn" class="btn-primary">+ Tambah Berita</button>
+      </div>
+      <div class="panel-card">
+        <h2>Senarai Berita</h2>
+        <div id="newsList"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: LAPORAN ===== -->
+    <div class="tab-panel" id="tab-reports">
+      <div class="panel-card">
+        <h2>Laporan Isu Addon (/report)</h2>
+        <div id="reportsList"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: PENGGUNA ===== -->
+    <div class="tab-panel" id="tab-users">
+      <div class="panel-card">
+        <h2>Pengguna Berdaftar</h2>
+        <div class="stat-box">
+          <div class="box"><div class="num" id="userCount">-</div><div class="lbl">Jumlah Pengguna</div></div>
+        </div>
+        <div id="usersList"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: SEMUA KOMEN ===== -->
+    <div class="tab-panel" id="tab-comments">
+      <div class="panel-card">
+        <h2>Hantar Komen Sebagai ADMIN</h2>
+        <label>Pilih Addon
+          <select id="adminCommentAddon"></select>
+        </label>
+        <label>Komen
+          <textarea id="adminCommentText" rows="2"></textarea>
+        </label>
+        <button id="sendAdminCommentBtn" class="btn-primary">Hantar sebagai ADMIN</button>
+      </div>
+      <div class="panel-card">
+        <h2>Semua Komen</h2>
+        <div id="allCommentsList"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let adminAuthHeader = null;
+  let addons = [];
+
+  // ================= LOGIN =================
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.classList.remove('show');
+    try{
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if(res.ok && data.ok){
+        adminAuthHeader = 'Basic ' + btoa(email + ':' + password);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        initDashboard();
+      } else {
+        errorEl.classList.add('show');
+      }
+    }catch(e){
+      errorEl.textContent = 'Ralat sambungan ke server.';
+      errorEl.classList.add('show');
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    adminAuthHeader = null;
+    location.reload();
+  });
+
+  // ================= TAB SWITCH =================
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function initDashboard(){
+    loadAddons();
+    loadAppearance();
+    loadNews();
+  }
+
+  // ================= ADDON =================
+  let editingId = null;
+
+  async function loadAddons(){
+    try{
+      const res = await fetch('/api/addons');
+      addons = await res.json();
+      renderAdminAddonList();
+      renderAdminCommentAddonOptions();
+    }catch(e){}
+  }
+
+  function renderAdminAddonList(){
+    const list = document.getElementById('adminAddonList');
+    if(!addons.length){ list.innerHTML = '<p class="empty-msg">Tiada addon lagi.</p>'; return; }
+    list.innerHTML = addons.map(a => `
+      <div class="list-item">
+        <div class="info">
+          <div class="t">${escapeHtml(a.title)}</div>
+          <div class="s">${escapeHtml(a.group)} · ${(a.versions||[]).length} versi · ⬇ ${a.downloads||0}</div>
+        </div>
+        <button class="btn-edit" data-edit="${escapeHtml(a.id)}">✎ Edit</button>
+        <button class="btn-danger" data-del="${escapeHtml(a.id)}">✕</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const a = addons.find(x => x.id === btn.getAttribute('data-edit'));
+        if(!a) return;
+        editingId = a.id;
+        document.getElementById('fieldGroup').value = a.group || '';
+        document.getElementById('fieldTitle').value = a.title || '';
+        document.getElementById('fieldImage').value = a.image || '';
+        document.getElementById('fieldLink').value = a.link || '';
+        document.getElementById('fieldDesc').value = a.desc || '';
+        document.getElementById('fieldHowTo').value = a.howTo || '';
+        document.getElementById('fieldVideoUrl').value = a.videoUrl || '';
+        document.getElementById('fieldBadge').value = a.badge || 'Muat Turun';
+        document.getElementById('addonFormHeading').textContent = 'Edit Addon';
+        document.getElementById('submitAddonBtn').textContent = 'Simpan Perubahan';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm('Padam addon ni?')) return;
+        await fetch('/api/addons?id=' + encodeURIComponent(btn.getAttribute('data-del')), {
+          method: 'DELETE', headers: { 'Authorization': adminAuthHeader }
+        });
+        await loadAddons();
+      });
+    });
+  }
+
+  document.getElementById('cancelEditBtn').addEventListener('click', () => {
+    editingId = null;
+    document.getElementById('addonForm').reset();
+    document.getElementById('fieldBadge').value = 'Muat Turun';
+    document.getElementById('addonFormHeading').textContent = 'Tambah Addon';
+    document.getElementById('submitAddonBtn').textContent = '+ Tambah Addon';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  });
+
+  document.getElementById('addonForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('addonError');
+    errorEl.classList.remove('show');
+    const addonData = {
+      group: document.getElementById('fieldGroup').value.trim(),
+      title: document.getElementById('fieldTitle').value.trim(),
+      image: document.getElementById('fieldImage').value.trim(),
+      link: document.getElementById('fieldLink').value.trim(),
+      desc: document.getElementById('fieldDesc').value.trim(),
+      howTo: document.getElementById('fieldHowTo').value.trim(),
+      videoUrl: document.getElementById('fieldVideoUrl').value.trim(),
+      badge: document.getElementById('fieldBadge').value.trim() || 'Muat Turun'
+    };
+    try{
+      let res;
+      if(editingId){
+        res = await fetch('/api/addons', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+          body: JSON.stringify({ id: editingId, ...addonData })
+        });
+      } else {
+        res = await fetch('/api/addons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+          body: JSON.stringify(addonData)
+        });
+      }
+      if(!res.ok){
+        const d = await res.json();
+        throw new Error(d.error || 'Ralat tidak diketahui');
+      }
+      document.getElementById('cancelEditBtn').click();
+      await loadAddons();
+    }catch(err){
+      errorEl.textContent = 'Gagal simpan: ' + err.message;
+      errorEl.classList.add('show');
+    }
+  });
+
+  // ================= RUPA LAMAN =================
+  async function loadAppearance(){
+    try{
+      const res = await fetch('/api/site-config');
+      const config = await res.json();
+      if(config.bgLight) document.getElementById('bgLight').value = config.bgLight;
+      if(config.bgDark) document.getElementById('bgDark').value = config.bgDark;
+      if(config.heroTitle){
+        document.getElementById('heroTitleMs').value = config.heroTitle.ms || '';
+        document.getElementById('heroTitleId').value = config.heroTitle.id || '';
+        document.getElementById('heroTitleEn').value = config.heroTitle.en || '';
+      }
+      if(config.heroDesc){
+        document.getElementById('heroDescMs').value = config.heroDesc.ms || '';
+        document.getElementById('heroDescId').value = config.heroDesc.id || '';
+        document.getElementById('heroDescEn').value = config.heroDesc.en || '';
+      }
+    }catch(e){}
+  }
+
+  document.getElementById('saveAppearanceBtn').addEventListener('click', async () => {
+    const successEl = document.getElementById('appearanceSuccess');
+    await fetch('/api/site-config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+      body: JSON.stringify({
+        bgLight: document.getElementById('bgLight').value,
+        bgDark: document.getElementById('bgDark').value
+      })
+    });
+    successEl.textContent = 'Warna disimpan!';
+    successEl.classList.add('show');
+    setTimeout(() => successEl.classList.remove('show'), 2000);
+  });
+
+  document.getElementById('saveTextBtn').addEventListener('click', async () => {
+    await fetch('/api/site-config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+      body: JSON.stringify({
+        heroTitle: {
+          ms: document.getElementById('heroTitleMs').value,
+          id: document.getElementById('heroTitleId').value,
+          en: document.getElementById('heroTitleEn').value
+        },
+        heroDesc: {
+          ms: document.getElementById('heroDescMs').value,
+          id: document.getElementById('heroDescId').value,
+          en: document.getElementById('heroDescEn').value
+        }
+      })
+    });
+    alert('Teks hero disimpan!');
+  });
+
+  // ================= BERITA =================
+  async function loadNews(){
+    try{
+      const res = await fetch('/api/news');
+      const news = await res.json();
+      const list = document.getElementById('newsList');
+      if(!news.length){ list.innerHTML = '<p class="empty-msg">Tiada berita lagi.</p>'; return; }
+      list.innerHTML = news.map(n => `
+        <div class="list-item">
+          <div class="info">
+            <div class="t">${escapeHtml(n.title)}</div>
+            <div class="s">${new Date(n.createdAt).toLocaleDateString('ms-MY')}</div>
+          </div>
+          <button class="btn-danger" data-del-news="${escapeHtml(n.id)}">✕</button>
+        </div>
+      `).join('');
+      list.querySelectorAll('[data-del-news]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/news?id=' + encodeURIComponent(btn.getAttribute('data-del-news')), {
+            method: 'DELETE', headers: { 'Authorization': adminAuthHeader }
+          });
+          await loadNews();
+        });
+      });
+    }catch(e){}
+  }
+
+  document.getElementById('addNewsBtn').addEventListener('click', async () => {
+    const errorEl = document.getElementById('newsError');
+    errorEl.classList.remove('show');
+    const title = document.getElementById('newsTitle').value.trim();
+    if(!title){ errorEl.textContent = 'Tajuk diperlukan.'; errorEl.classList.add('show'); return; }
+    try{
+      const res = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+        body: JSON.stringify({
+          title,
+          content: document.getElementById('newsContent').value.trim(),
+          image: document.getElementById('newsImage').value.trim()
+        })
+      });
+      if(!res.ok) throw new Error('gagal simpan');
+      document.getElementById('newsTitle').value = '';
+      document.getElementById('newsContent').value = '';
+      document.getElementById('newsImage').value = '';
+      await loadNews();
+    }catch(e){
+      errorEl.textContent = 'Gagal tambah berita.';
+      errorEl.classList.add('show');
+    }
+  });
+
+  // ================= LAPORAN =================
+  document.querySelector('[data-tab="reports"]').addEventListener('click', loadReports);
+  async function loadReports(){
+    const list = document.getElementById('reportsList');
+    list.innerHTML = '<p class="empty-msg">Memuatkan...</p>';
+    try{
+      const res = await fetch('/api/comments?adminReports=1', { headers: { 'Authorization': adminAuthHeader } });
+      const reports = await res.json();
+      if(!reports.length){ list.innerHTML = '<p class="empty-msg">Tiada laporan.</p>'; return; }
+      list.innerHTML = reports.map(r => {
+        const a = addons.find(x => x.id === r.addon_id);
+        return `
+          <div class="list-item" style="flex-direction:column; align-items:flex-start;">
+            <div class="row-flex" style="width:100%; justify-content:space-between;">
+              <div>
+                <div class="t">${escapeHtml(a ? a.title : '(addon dipadam)')}</div>
+                <div class="s">${escapeHtml(r.user_email)} · ${new Date(r.created_at).toLocaleString('ms-MY')}</div>
+              </div>
+              <button class="btn-danger" data-del-report="${escapeHtml(r.id)}">✕</button>
+            </div>
+            <div class="comment-text-box">${escapeHtml(r.text)}</div>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('[data-del-report]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/comments?id=' + encodeURIComponent(btn.getAttribute('data-del-report')), {
+            method: 'DELETE', headers: { 'Authorization': adminAuthHeader }
+          });
+          await loadReports();
+        });
+      });
+    }catch(e){
+      list.innerHTML = '<p class="empty-msg">Gagal muat laporan.</p>';
+    }
+  }
+
+  // ================= PENGGUNA =================
+  document.querySelector('[data-tab="users"]').addEventListener('click', loadUsers);
+  async function loadUsers(){
+    const list = document.getElementById('usersList');
+    list.innerHTML = '<p class="empty-msg">Memuatkan...</p>';
+    try{
+      const res = await fetch('/api/admin-users', { headers: { 'Authorization': adminAuthHeader } });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      document.getElementById('userCount').textContent = data.count;
+      if(!data.users.length){ list.innerHTML = '<p class="empty-msg">Tiada pengguna berdaftar lagi.</p>'; return; }
+      list.innerHTML = data.users.map(u => `
+        <div class="list-item">
+          <div class="info">
+            <div class="t">${escapeHtml(u.username || u.email)}</div>
+            <div class="s">${escapeHtml(u.email)} · ${escapeHtml(u.provider)} · daftar ${new Date(u.createdAt).toLocaleDateString('ms-MY')}</div>
+          </div>
+        </div>
+      `).join('');
+    }catch(e){
+      list.innerHTML = '<p class="empty-msg">Gagal muat senarai pengguna. Pastikan SUPABASE_SERVICE_ROLE_KEY betul.</p>';
+    }
+  }
+
+  // ================= SEMUA KOMEN =================
+  function renderAdminCommentAddonOptions(){
+    const sel = document.getElementById('adminCommentAddon');
+    sel.innerHTML = addons.map(a => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.title)}</option>`).join('');
+  }
+
+  document.getElementById('sendAdminCommentBtn').addEventListener('click', async () => {
+    const addonId = document.getElementById('adminCommentAddon').value;
+    const text = document.getElementById('adminCommentText').value.trim();
+    if(!addonId || !text) return;
+    try{
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+        body: JSON.stringify({ addonId, text })
+      });
+      if(!res.ok) throw new Error('gagal hantar');
+      document.getElementById('adminCommentText').value = '';
+      await loadAllComments();
+    }catch(e){
+      alert('Gagal hantar komen.');
+    }
+  });
+
+  document.querySelector('[data-tab="comments"]').addEventListener('click', loadAllComments);
+  async function loadAllComments(){
+    const list = document.getElementById('allCommentsList');
+    list.innerHTML = '<p class="empty-msg">Memuatkan...</p>';
+    try{
+      const res = await fetch('/api/comments?allComments=1', { headers: { 'Authorization': adminAuthHeader } });
+      const comments = await res.json();
+      if(!comments.length){ list.innerHTML = '<p class="empty-msg">Tiada komen lagi.</p>'; return; }
+      list.innerHTML = comments.map(c => {
+        const a = addons.find(x => x.id === c.addon_id);
+        const nameDisplay = c.is_admin ? '<span class="admin-badge">ADMIN</span>' : escapeHtml(c.user_name);
+        const typeTag = c.type === 'report' ? ' 🚩 report' : '';
+        return `
+          <div class="list-item" style="flex-direction:column; align-items:flex-start;">
+            <div class="row-flex" style="width:100%; justify-content:space-between;">
+              <div>
+                <div class="t">${nameDisplay}${typeTag} — ${escapeHtml(a ? a.title : '(addon dipadam)')}</div>
+                <div class="s">${escapeHtml(c.user_email)} · ${new Date(c.created_at).toLocaleString('ms-MY')}</div>
+              </div>
+              <button class="btn-danger" data-del-comment="${escapeHtml(c.id)}">✕</button>
+            </div>
+            <div class="comment-text-box">${escapeHtml(c.text)}</div>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('[data-del-comment]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/comments?id=' + encodeURIComponent(btn.getAttribute('data-del-comment')), {
+            method: 'DELETE', headers: { 'Authorization': adminAuthHeader }
+          });
+          await loadAllComments();
+        });
+      });
+    }catch(e){
+      list.innerHTML = '<p class="empty-msg">Gagal muat komen.</p>';
+    }
+  }
+</script>
+
+</body>
+</html>

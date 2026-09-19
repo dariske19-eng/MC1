@@ -1,0 +1,8 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/addon/:id", "destination": "/api/addon-page?id=:id" },
+    { "source": "/signin", "destination": "/api/auth-page" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
